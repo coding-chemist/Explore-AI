@@ -1,18 +1,29 @@
-from typing import Optional
+from typing import Union
 
 import streamlit as st
+from core.models import UIMessage
 
 
 def render_under_construction(
-    title: str,
-    message: Optional[str] = None,
-    back_href: str = "?page=home",
-    back_label: str = "Back to Topics",
+    payload: Union[str, UIMessage],
 ) -> None:
     """Render a small "under construction" notice consistently.
 
     This centralizes the HTML/CSS so topic pages stay concise.
     """
+    # accept either a simple title string (backwards compatible) or a
+    # UIMessage Pydantic model for richer options.
+    if isinstance(payload, UIMessage):
+        title = payload.title
+        message = payload.message
+        back_href = payload.back_href
+        back_label = payload.back_label
+    else:
+        title = payload
+        message = None
+        back_href = "?page=home"
+        back_label = "Back to Topics"
+
     # map some known topic titles to the requested accent colors
     t = title.lower()
     if "machine" in t:
