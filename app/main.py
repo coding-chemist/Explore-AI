@@ -32,10 +32,36 @@ header {visibility: hidden;}
     unsafe_allow_html=True,
 )
 
-page = st.query_params.get("page", "landing")
+# normalize query param (Streamlit returns lists for query params)
+page = st.query_params.get("page", ["landing"])
+if isinstance(page, list):
+    page = page[0] if page else "landing"
+
 render_header()
+
 if page == "landing":
     from Landing import render
+
+    render()
+elif page == "home":
+    # render the app "home" page (topics)
+    from Home import render
+
+    render()
+elif page == "ml":
+    from pages.ml import render
+
+    render()
+elif page == "genai":
+    from pages.genai import render
+
+    render()
+elif page == "agenticai":
+    from pages.agenticai import render
+
+    render()
+elif page == "statistics":
+    from pages.statistics import render
 
     render()
 else:
