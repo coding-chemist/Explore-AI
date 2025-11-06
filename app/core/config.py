@@ -1,0 +1,1 @@
+# Pydantic config file placeholder
