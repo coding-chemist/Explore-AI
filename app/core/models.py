@@ -1,4 +1,6 @@
+from enum import Enum
 from pathlib import Path
+from typing import Optional
 
 from pydantic import BaseModel
 from pydantic import Field
@@ -45,3 +47,20 @@ class UIMessage(BaseModel):
     message: str | None = None
     back_href: str = "?page=home"
     back_label: str = "Back to Topics"
+    # Optional explicit page hint (prefer passing this when available)
+    page: Optional["Page"] = None
+
+
+class Page(str, Enum):
+    """Allowed page identifiers used by the app routing.
+
+    Using a `str`-backed Enum makes it easy to coerce and compare values
+    received from query parameters while keeping type-safety.
+    """
+
+    landing = "landing"
+    home = "home"
+    ml = "ml"
+    genai = "genai"
+    agenticai = "agenticai"
+    dl = "dl"

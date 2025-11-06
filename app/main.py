@@ -1,14 +1,14 @@
+import importlib
+
 import streamlit as st
 from components.header import render_header
 from core.config import app as appcfg
+from core.models import Page
 from services.assets import load_css
 from services.assets import load_logo_base64
 
 # prefer SVG data-URI as page icon when available
-try:
-    logo_icon = load_logo_base64()
-except (FileNotFoundError, OSError):
-    logo_icon = appcfg.page_icon
+logo_icon = load_logo_base64()
 
 st.set_page_config(
     page_title=appcfg.app_name,
@@ -33,36 +33,43 @@ header {visibility: hidden;}
 )
 
 # normalize query param (Streamlit returns lists for query params)
-page = st.query_params.get("page", ["landing"])
-if isinstance(page, list):
-    page = page[0] if page else "landing"
+_page = st.query_params.get("page", [Page.landing.value])
+if isinstance(_page, list):
+    _page = _page[0] if _page else Page.landing.value
+
+# coerce into the Page enum; fall back to landing for unknown values
+try:
+    page = Page(str(_page))
+except ValueError:
+    page = Page.landing
 
 render_header()
 
-if page == "landing":
-    from Landing import render
+# map Page enum values to module import paths. Use full package paths so
+# imports work predictably whether the package is executed as a module or
+# imported.
+_route_map = {
+    Page.landing: "Landing",
+    Page.home: "Home",
+    Page.ml: "pages.ml",
+    Page.genai: "pages.genai",
+    Page.agenticai: "pages.agenticai",
+    Page.dl: "pages.dl",
+}
 
-    render()
-elif page == "home":
-    # render the app "home" page (topics)
-    from Home import render
-
-    render()
-elif page == "ml":
-    from pages.ml import render
-
-    render()
-elif page == "genai":
-    from pages.genai import render
-
-    render()
-elif page == "agenticai":
-    from pages.agenticai import render
-
-    render()
-elif page == "dl":
-    from pages.dl import render
-
-    render()
+module_name = _route_map.get(page)
+if module_name:
+    try:
+        mod = importlib.import_module(module_name)
+        render_fn = getattr(mod, "render", None)
+        if callable(render_fn):
+            render_fn()
+        else:
+            st.error(
+                "Page module '{name}' does not expose a callable "
+                "render()".format(name=module_name)
+            )
+    except Exception as exc:  # keep broad handling to avoid crashing the UI
+        st.error(f"Failed to load page '{page.value}': {exc}")
 else:
     st.write(":construction: Page not found")
