@@ -100,3 +100,48 @@ input, textarea, button, select{font-family:inherit !important;}
 .xa-btn svg:nth-of-type(4){ left:74%; top:62%; --s:0.9; }
 .xa-btn svg:nth-of-type(5){ left:96%; top:28%; --s:0.8; }
 @keyframes fadeIn{from{opacity:0;transform:scale(.98);}to{opacity:1;transform:scale(1);}}
+
+/* Decorative animated arrow placed to the right of the hero CTA */
+.xa-cta{position:relative}
+.xa-arrow{
+	position:absolute;
+	top:61%;
+	right:40%;
+	transform:translateY(-50%);
+	cursor:pointer;
+	display:flex;
+	gap:6px; /* space chevrons horizontally */
+	align-items:center;
+	justify-content:center;
+	/* place the arrow closer so the leftmost chevron visually touches the CTA */
+	margin-right: -8px;
+}
+.xa-arrow span{
+	display:block;
+	width:14px; /* fixed pixel sizes are more predictable across viewports */
+	height:14px;
+	/* draw chevrons pointing left: use border-top + border-left then rotate -45deg */
+	border-top:3px solid var(--c-cyan);
+	border-left:3px solid var(--c-cyan);
+	transform:rotate(-45deg);
+	margin:0; /* remove stacking; use flex gap */
+	opacity:0;
+	animation:xa-arrow-animate 1.4s infinite;
+}
+.xa-arrow span:nth-child(1){animation-delay:0s}
+.xa-arrow span:nth-child(2){animation-delay:0.12s}
+.xa-arrow span:nth-child(3){animation-delay:0.24s}
+
+@keyframes xa-arrow-animate{
+	/* chevrons slide left toward the CTA then fade */
+	0%{opacity:0; transform:rotate(-45deg) translateX(12px) translateY(-6px)}
+	30%{opacity:1; transform:rotate(-45deg) translateX(4px) translateY(-2px)}
+	60%{opacity:1; transform:rotate(-45deg) translateX(-2px) translateY(0)}
+	100%{opacity:0; transform:rotate(-45deg) translateX(-12px) translateY(6px)}
+}
+
+/* make arrow smaller on small screens and move it slightly closer to the button */
+@media (max-width:599px){
+	.xa-arrow{right:3%;}
+	.xa-arrow span{width:10px;height:10px;border-top:2px solid var(--c-cyan);border-left:2px solid var(--c-cyan)}
+}
