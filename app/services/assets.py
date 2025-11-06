@@ -1,16 +1,67 @@
 import base64
+import mimetypes
+from enum import Enum
 from pathlib import Path
 
 from core.config import app
 from core.config import paths
+from pydantic import BaseModel
 
 
+# ---------------------------------------------------------------------
+# ENUM: known suffixes
+# ---------------------------------------------------------------------
+class Suffix(str, Enum):
+    PNG = ".png"
+    JPG = ".jpg"
+    JPEG = ".jpeg"
+    GIF = ".gif"
+    SVG = ".svg"
+    OTHER = ""
+
+
+# ---------------------------------------------------------------------
+# MIME map builder (dynamic)
+# ---------------------------------------------------------------------
+def _build_mime_map() -> dict[str, str]:
+    """
+    Build a dynamic extension → MIME mapping.
+
+    Uses Python's built-in mimetypes table (which includes OS mime.types)
+    and fills in any common gaps such as SVG.
+    """
+    mimetypes.init()
+    mimetypes.add_type("image/svg+xml", ".svg")  # some OS tables miss this
+
+    mime_map: dict[str, str] = {}
+    for ext in Suffix:
+        if not ext.value:
+            continue
+        mt, _ = mimetypes.guess_type(f"file{ext.value}")
+        mime_map[ext.value] = mt or "application/octet-stream"
+    return mime_map
+
+
+# global map built once at import
+MIME_MAP = _build_mime_map()
+
+
+def register_mime(ext: str, mime: str) -> None:
+    """Register or override a MIME type for an extension at runtime."""
+    if not ext.startswith("."):
+        ext = f".{ext}"
+    MIME_MAP[ext.lower()] = mime
+
+
+# ---------------------------------------------------------------------
+# Utilities
+# ---------------------------------------------------------------------
 def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
 def load_css(*files: str) -> str:
-    parts = []
+    parts: list[str] = []
     for f in files:
         p = paths.styles / f
         if p.exists():
@@ -30,51 +81,71 @@ def load_logo_base64() -> str:
     return f"data:image/png;base64,{encoded}"
 
 
+# ---------------------------------------------------------------------
+# Models
+# ---------------------------------------------------------------------
+class SuffixModel(BaseModel):
+    """Represent and normalize a file suffix and provide a MIME type."""
+
+    suffix: str
+
+    @property
+    def normalized(self) -> str:
+        s = (self.suffix or "").lower()
+        if s.startswith("."):
+            return s
+        for ext in Suffix:
+            if not ext.value:
+                continue
+            if s.endswith(ext.value):
+                return ext.value
+        return ""
+
+    @property
+    def mime(self) -> str:
+        s = self.normalized
+        if s in MIME_MAP:
+            return MIME_MAP[s]
+        mt, _ = mimetypes.guess_type(f"file{s}")
+        return mt or "application/octet-stream"
+
+
+class AssetData(BaseModel):
+    """Represent an asset on disk and produce a data URI."""
+
+    path: Path
+    b64: str
+    mime: str
+
+    @classmethod
+    def from_path(cls, path: Path) -> "AssetData":
+        data = base64.b64encode(path.read_bytes()).decode("utf-8")
+        mime = SuffixModel(suffix=path.suffix).mime
+        return cls(path=path, b64=data, mime=mime)
+
+    def data_uri(self) -> str:
+        return f"data:{self.mime};base64,{self.b64}"
+
+
+# ---------------------------------------------------------------------
+# Helpers for assets
+# ---------------------------------------------------------------------
 def gif_src() -> str:
     local = paths.assets / app.hero_gif
     if local.exists():
-        # return a base64 data URI so the GIF can be embedded inline
-        data = base64.b64encode(local.read_bytes()).decode("utf-8")
-        # guess mime type by suffix
-        suffix = local.suffix.lower()
-        if suffix == ".gif":
-            mime = "image/gif"
-        elif suffix == ".png":
-            mime = "image/png"
-        elif suffix in (".jpg", ".jpeg"):
-            mime = "image/jpeg"
-        else:
-            mime = "application/octet-stream"
-        return f"data:{mime};base64,{data}"
-
+        return AssetData.from_path(local).data_uri()
     return "https://c.tenor.com/ow94qLGI8WsAAAAC/ai.gif"
 
 
 def asset_data_uri(relpath: str) -> str:
-    """Return a data URI for an asset located under the assets/ folder.
-
-    If the file does not exist, return a 1x1 transparent PNG data URI as a
-    harmless fallback.
-    """
+    """Return a data URI for an asset located under assets/."""
     local = paths.assets / relpath
     if local.exists():
-        data = base64.b64encode(local.read_bytes()).decode("utf-8")
-        suffix = local.suffix.lower()
-        if suffix == ".png":
-            mime = "image/png"
-        elif suffix == ".jpg" or suffix == ".jpeg":
-            mime = "image/jpeg"
-        elif suffix == ".gif":
-            mime = "image/gif"
-        elif suffix == ".svg":
-            mime = "image/svg+xml"
-        else:
-            mime = "application/octet-stream"
-        return f"data:{mime};base64,{data}"
+        return AssetData.from_path(local).data_uri()
 
-    # 1x1 transparent PNG
+    # 1×1 transparent PNG fallback
     return (
         "data:image/png;base64,"
-        + "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMA"
-        "ASsJTYQAAAAASUVORK5CYII="
+        + "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAA"
+        + "MAASsJTYQAAAAASUVORK5CYII="
     )

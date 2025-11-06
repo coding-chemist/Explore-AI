@@ -1,43 +1,67 @@
-from pathlib import Path
+from typing import Dict
+from typing import List
+from typing import Optional
 
 from pydantic import Field
-from pydantic_settings import BaseSettings
 
-ROOT = Path(__file__).resolve().parents[2]
-TEMPLATES_DIR = Path(__file__).resolve().parents[1] / "templates"
-
-
-class Paths(BaseSettings):
-    root: Path = Field(default_factory=lambda: ROOT)
-    assets: Path = Field(default_factory=lambda: ROOT / "assets")
-    styles: Path = Field(default_factory=lambda: ROOT / "styles")
-    templates: Path = Field(default_factory=lambda: TEMPLATES_DIR)
+from .models import AppInfo
+from .models import BaseModel
+from .models import Page
+from .models import Paths
+from .models import Theme
 
 
-class ThemeConfig(BaseSettings):
-    black: str = "#000000"
-    gray_900: str = "#111111"
-    cyan: str = "#00F5FF"
-    electric: str = "#00D9FF"
-    violet: str = "#7B2FF7"
-    text_primary: str = "#F5F7FA"
-    text_muted: str = "#A3A3A3"
-    gradient_primary: str = (
-        "linear-gradient(90deg, #00F5FF, #00D9FF 35%, #7B2FF7 75%)"
-    )
+# Page metadata: keep routing / colors centralized so other modules can
+# import typed page information instead of duplicating heuristics.
+class PageMeta(BaseModel):
+    page: Page
+    color: str
+    keywords: List[str] = Field(default_factory=list)
+    module: Optional[str] = None
 
 
-class AppConfig(BaseSettings):
-    app_name: str = "Explore‑AI"
-    tagline: str = (
-        "A Place for Mastering AI — from Classic ML to Modern Generative "
-        "and Agentic AI."
-    )
-    logo_file: str = "logo.svg"
-    hero_gif: str = "gifs/ai_hero.gif"
-    page_icon: str = "🧠"
+page_meta: Dict[Page, PageMeta] = {
+    Page.ml: PageMeta(
+        page=Page.ml,
+        color="#f7308c",
+        keywords=["machine", "ml"],
+        module="pages.ml",
+    ),
+    Page.dl: PageMeta(
+        page=Page.dl,
+        color="#ccff00",
+        keywords=["deep", "dl"],
+        module="pages.dl",
+    ),
+    Page.genai: PageMeta(
+        page=Page.genai,
+        color="#ffeb3b",
+        keywords=["gen", "generative"],
+        module="pages.genai",
+    ),
+    Page.agenticai: PageMeta(
+        page=Page.agenticai,
+        color="#00d9ff",
+        keywords=["agent"],
+        module="pages.agenticai",
+    ),
+    Page.home: PageMeta(
+        page=Page.home,
+        color="var(--c-cyan)",
+        keywords=["home"],
+        module="Home",
+    ),
+    Page.landing: PageMeta(
+        page=Page.landing,
+        color="var(--c-cyan)",
+        keywords=["landing"],
+        module="Landing",
+    ),
+}
 
 
+# Export ready-to-use instances (Pydantic BaseModel instances).
+# Other modules should import these (typed) singletons.
 paths = Paths()
-theme = ThemeConfig()
-app = AppConfig()
+theme = Theme()
+app = AppInfo()
