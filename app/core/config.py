@@ -22,7 +22,9 @@ class ThemeConfig(BaseSettings):
     violet: str = "#7B2FF7"
     text_primary: str = "#F5F7FA"
     text_muted: str = "#A3A3A3"
-    gradient_primary: str = "linear-gradient(90deg, #00F5FF, #00D9FF 35%, #7B2FF7 75%)"
+    gradient_primary: str = (
+        "linear-gradient(90deg, #00F5FF, #00D9FF 35%, #7B2FF7 75%)"
+    )
 
 
 class AppConfig(BaseSettings):

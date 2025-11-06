@@ -1,7 +1,8 @@
 import base64
 from pathlib import Path
 
-from core.config import app, paths
+from core.config import app
+from core.config import paths
 
 
 def read_text(path: Path) -> str:

@@ -1,6 +1,7 @@
 import streamlit as st
 from core.config import app as appcfg
-from services.assets import gif_src, load_template
+from services.assets import gif_src
+from services.assets import load_template
 
 
 def render():

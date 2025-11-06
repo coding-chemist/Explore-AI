@@ -1,7 +1,8 @@
 import streamlit as st
 from components.header import render_header
 from core.config import app as appcfg
-from services.assets import load_css, load_logo_base64
+from services.assets import load_css
+from services.assets import load_logo_base64
 
 # prefer SVG data-URI as page icon when available
 try:
