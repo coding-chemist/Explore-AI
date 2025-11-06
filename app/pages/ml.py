@@ -1,6 +1,5 @@
-import streamlit as st
+from services.ui import render_under_construction
 
 
 def render():
-    st.header("Machine Learning")
-    st.write("Placeholder page for Machine Learning content.")
+    render_under_construction("Machine Learning")

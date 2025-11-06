@@ -1,6 +1,5 @@
-import streamlit as st
+from services.ui import render_under_construction
 
 
 def render():
-    st.header("Generative AI")
-    st.write("Placeholder page for Generative AI content.")
+    render_under_construction("Generative AI")

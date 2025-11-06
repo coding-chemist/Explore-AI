@@ -29,11 +29,22 @@
   min-height: 260px;         /* slightly bigger, uniform size */
 }
 
+/* Ensure topic links never show underlines in any state */
+.xa-topic,
+.xa-topic:link,
+.xa-topic:visited,
+.xa-topic:hover,
+.xa-topic:focus,
+.xa-topic:active{
+  text-decoration: none !important;
+  color: inherit !important;
+}
+
 .xa-topic-inner{
   display:flex;
   flex-direction:column;
   gap:16px;
-  padding:28px 28px 26px 28px; /* increased padding to allow room for icons */
+  padding:24px 28px 22px 28px; /* slightly reduced top padding so text sits higher */
   /* softer, slightly lighter card surface with inner sheen */
   background: linear-gradient(180deg, rgba(18,25,30,0.7), rgba(8,10,14,0.55));
   -webkit-backdrop-filter: blur(6px) saturate(120%);
@@ -51,7 +62,18 @@
 .xa-topic-inner::before{ /* removed vertical cyan accent for cleaner look */
   content:'';position:static;width:0;height:0;overflow:hidden}
 
-.xa-topic h3{margin:0;font-size:1.05rem;color:var(--text);font-weight:800}
+.xa-topic h3{
+  margin:0;
+  font-size:1.05rem;
+  color:var(--text);
+  font-weight:800;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  display:flex;
+  align-items:center;
+  gap:0.5rem;
+}
 .xa-topic p{margin:0;color:rgba(245,247,250,0.88);font-size:0.88rem;line-height:1.25}
 
 /* elevated center card effect: subtle micro-lift on hover and softer shadow */
@@ -86,8 +108,21 @@
 }
 
 /* layout for topic text + right-side media */
-.xa-topic-inner{flex-direction:row;align-items:center;justify-content:space-between;position:relative;overflow:hidden}
-.xa-topic-text{flex:1;min-width:0;margin-top:0;padding-top: 0%;}
+.xa-topic-inner{flex-direction:row;align-items:flex-start;justify-content:space-between;position:relative;overflow:hidden;padding-left: 2%;}
+.xa-topic-text{flex:1;min-width:0;margin-top:0;padding-top: 0%;margin-left:0%;padding-left: 0%;
+  display:flex;
+  flex-direction:column;
+  gap:6px; /* consistent spacing between h3 and p */
+}
+
+/* small inline icons in topic headings (PNG/SVG). Sized to the current font using em so they match text height */
+.xa-topic-text h3 img{
+  height:1em;
+  width:auto;
+  vertical-align:middle;
+  margin-right:0.1rem;
+  display:inline-block;
+}
 
 /* Right-side face (face2) behavior: full-height colored panel that collapses to a 60px footer on hover.
    We implement collapse by translating the panel down so only the bottom bar remains visible. */
@@ -150,7 +185,7 @@
 .xa-topic:nth-child(1) .xa-topic-media{background: linear-gradient(45deg, #3503ad, #f7308c); border-radius:15px}
 .xa-topic:nth-child(2) .xa-topic-media{background: linear-gradient(45deg, #ccff00, #09afff); border-radius:15px}
 .xa-topic:nth-child(3) .xa-topic-media{background: linear-gradient(45deg, #e91e63, #ffeb3b); border-radius:15px}
-.xa-topic:nth-child(4) .xa-topic-media{background: linear-gradient(45deg, #00d9ff, #00f5ff); border-radius:15px}
+.xa-topic:nth-child(4) .xa-topic-media{background: linear-gradient(45deg, #00d9ff, #3503ad); border-radius:15px}
 
 /* Hover: collapse height to 60px and make bottom corners rounded */
 .xa-topic:hover .xa-topic-media{height:60px; border-radius: 0 0 15px 15px}

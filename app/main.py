@@ -60,8 +60,8 @@ elif page == "agenticai":
     from pages.agenticai import render
 
     render()
-elif page == "statistics":
-    from pages.statistics import render
+elif page == "dl":
+    from pages.dl import render
 
     render()
 else:

@@ -48,3 +48,33 @@ def gif_src() -> str:
         return f"data:{mime};base64,{data}"
 
     return "https://c.tenor.com/ow94qLGI8WsAAAAC/ai.gif"
+
+
+def asset_data_uri(relpath: str) -> str:
+    """Return a data URI for an asset located under the assets/ folder.
+
+    If the file does not exist, return a 1x1 transparent PNG data URI as a
+    harmless fallback.
+    """
+    local = paths.assets / relpath
+    if local.exists():
+        data = base64.b64encode(local.read_bytes()).decode("utf-8")
+        suffix = local.suffix.lower()
+        if suffix == ".png":
+            mime = "image/png"
+        elif suffix == ".jpg" or suffix == ".jpeg":
+            mime = "image/jpeg"
+        elif suffix == ".gif":
+            mime = "image/gif"
+        elif suffix == ".svg":
+            mime = "image/svg+xml"
+        else:
+            mime = "application/octet-stream"
+        return f"data:{mime};base64,{data}"
+
+    # 1x1 transparent PNG
+    return (
+        "data:image/png;base64,"
+        + "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMA"
+        "ASsJTYQAAAAASUVORK5CYII="
+    )
