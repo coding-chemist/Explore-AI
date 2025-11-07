@@ -14,6 +14,7 @@ st.set_page_config(
     page_title=appcfg.app_name,
     page_icon=logo_icon,
     layout="wide",
+    initial_sidebar_state="collapsed",
 )
 
 st.markdown(
