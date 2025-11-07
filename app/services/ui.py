@@ -12,6 +12,11 @@ def render_under_construction(
 
     This centralizes the HTML/CSS so topic pages stay concise.
     """
+    # Hide sidebar completely
+    st.markdown(
+        "<style>[data-testid='stSidebar'] {visibility: hidden; width: 0;}</style>",
+        unsafe_allow_html=True,
+    )
     # accept either a simple title string (backwards compatible) or a
     # UIMessage Pydantic model for richer options.
     if isinstance(payload, UIMessage):
